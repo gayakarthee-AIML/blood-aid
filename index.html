@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BloodAid — Prototype</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF7EF;
+    --paper-2:#F8E9DC;
+    --card:#FFFFFF;
+    --ink:#2A1418;
+    --ink-2:#6B5155;
+    --ink-3:#A08A8D;
+    --red:#D7263D;
+    --red-deep:#A3172B;
+    --red-soft:#FFE1E3;
+    --mint:#1F7F57;
+    --mint-soft:#D9F2E5;
+    --gold:#A8650F;
+    --gold-soft:#FCEBCF;
+    --grey-soft:#EFE6E1;
+    --edge:2px solid var(--ink);
+    --shadow:3px 3px 0 var(--ink);
+    --f-px:'Bricolage Grotesque', system-ui, sans-serif;
+    --f-mono:'IBM Plex Mono', ui-monospace, monospace;
+    --f-body:'DM Sans', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--f-body); color:var(--ink);
+    background-color:#F1DDD0;
+    background-image:radial-gradient(#E2C4B3 1.2px, transparent 1.4px);
+    background-size:14px 14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100vh; padding:24px 12px;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  button:focus-visible, select:focus-visible, input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+  svg.px{display:block;overflow:visible}
+
+  /* ---------- phone ---------- */
+  .phone{
+    width:390px; height:820px; background:var(--paper);
+    border:10px solid #1B0E10; border-radius:46px; overflow:hidden; position:relative;
+    box-shadow:8px 8px 0 #1B0E10, 0 30px 60px -20px rgba(40,10,14,.45);
+    display:flex; flex-direction:column;
+  }
+  .statusbar{
+    position:absolute; top:0; left:0; right:0; height:38px; z-index:40;
+    display:flex; align-items:center; justify-content:space-between; padding:0 26px;
+    font:400 11px var(--f-mono); pointer-events:none;
+  }
+  .island{width:104px;height:26px;background:#1B0E10;border-radius:20px;position:absolute;left:50%;top:7px;transform:translateX(-50%)}
+  .statusbar.light{color:#fff}
+  .screens{flex:1;position:relative;overflow:hidden}
+  .screen{
+    position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+    display:none; flex-direction:column; padding-top:40px;
+    scrollbar-width:none;
+  }
+  .screen::-webkit-scrollbar{display:none}
+  .screen.active{display:flex;animation:enter .22s ease-out}
+  @keyframes enter{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+  .screen.back.active{animation-name:enterBack}
+  @keyframes enterBack{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+
+  /* ---------- shared ---------- */
+  .pad{padding:0 18px}
+  .lbl{font:400 10.5px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+  h1,h2,h3,.disp{font-family:var(--f-px);font-weight:800;letter-spacing:-.02em}
+  .row{display:flex;align-items:center;gap:10px}
+  .between{justify-content:space-between}
+  .muted{color:var(--ink-2)}
+  .small{font-size:12.5px}
+  .card{background:var(--card);border:var(--edge);border-radius:12px;box-shadow:var(--shadow);padding:14px}
+  .section-h{display:flex;justify-content:space-between;align-items:baseline;margin:22px 18px 10px}
+  .section-h h3{font-size:17px}
+  .link{font-weight:700;font-size:13px;color:var(--red-deep);text-decoration:underline;text-underline-offset:3px}
+
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    font:700 15px var(--f-body); padding:13px 16px; border:var(--edge); border-radius:10px;
+    box-shadow:var(--shadow); transition:transform .07s, box-shadow .07s;
+  }
+  .btn:active:not(:disabled){transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+  .btn-red{background:var(--red);color:#fff}
+  .btn-white{background:#fff;color:var(--ink)}
+  .btn-ink{background:var(--ink);color:#fff}
+  .btn-sm{padding:9px 12px;font-size:13px;width:auto}
+  .btn:disabled{background:var(--grey-soft);color:var(--ink-3);box-shadow:none;border-color:var(--ink-3);cursor:not-allowed}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font:700 11.5px var(--f-body);padding:4px 9px;border-radius:6px;border:1.5px solid currentColor;white-space:nowrap}
+  .pill.mint{color:var(--mint);background:var(--mint-soft)}
+  .pill.gold{color:var(--gold);background:var(--gold-soft)}
+  .pill.red{color:var(--red-deep);background:var(--red-soft)}
+  .pill.grey{color:var(--ink-2);background:var(--grey-soft)}
+
+  .topbar{display:flex;align-items:center;gap:12px;padding:10px 18px 12px}
+  .topbar h2{font-size:20px;flex:1}
+  .iconbtn{width:38px;height:38px;border:var(--edge);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;flex-shrink:0}
+  .iconbtn:active{transform:translate(2px,2px);box-shadow:none}
+
+  .footer{
+    position:sticky;bottom:0;margin-top:auto;padding:14px 18px 18px;
+    background:linear-gradient(180deg, rgba(255,247,239,0) 0, var(--paper) 22px);
+    display:flex;flex-direction:column;gap:8px;z-index:5;
+  }
+  .footer .hint{text-align:center;font-size:12.5px;color:var(--ink-2)}
+
+  .segbar{display:flex;gap:3px;margin:12px 0 8px}
+  .segbar i{flex:1;height:12px;background:var(--grey-soft);border:1.5px solid var(--ink)}
+  .segbar i.on{background:var(--red)}
+  .segbar.mintbar i.on{background:var(--mint)}
+
+  .toast{
+    position:absolute;left:18px;right:18px;bottom:96px;z-index:60;
+    background:var(--ink);color:#fff;border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:500;
+    box-shadow:3px 3px 0 var(--red);opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:none}
+
+  /* ---------- tab bar ---------- */
+  .tabbar{
+    display:none;height:74px;border-top:var(--edge);background:#fff;position:relative;z-index:30;
+    grid-template-columns:repeat(5,1fr);align-items:center;padding-bottom:6px;
+  }
+  .tabbar.show{display:grid}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:5px;font:400 9.5px var(--f-mono);color:var(--ink-3);padding:8px 0}
+  .tab.on{color:var(--red)}
+  .tab-req{display:flex;justify-content:center}
+  .tab-req button{
+    width:58px;height:58px;margin-top:-28px;background:var(--red);border:var(--edge);border-radius:14px;
+    box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;
+  }
+  .tab-req button:active{transform:translate(3px,3px);box-shadow:none}
+
+  /* ---------- splash ---------- */
+  #screen-splash{background:var(--red);color:#fff;align-items:center;justify-content:center;text-align:center;padding:40px 28px 34px}
+  #screen-splash .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+  #screen-splash h1{font-size:46px;margin-top:26px;text-shadow:3px 3px 0 var(--red-deep)}
+  #screen-splash p{font-size:15px;color:#FFE1E3;margin-top:8px;max-width:250px;line-height:1.45}
+  .bob{animation:bob 3.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .spark{position:absolute;animation:twinkle 1.8s steps(2) infinite}
+  @keyframes twinkle{0%,100%{opacity:1}50%{opacity:.15}}
+  .ground{width:110px;height:10px;background:var(--red-deep);opacity:.55;margin-top:14px;border-radius:50%}
+  #screen-splash .btn{max-width:320px}
+
+  /* ---------- login ---------- */
+  #screen-login .body{padding:30px 22px 0}
+  #screen-login h2{font-size:30px;margin:18px 0 6px}
+  #screen-login .sub{color:var(--ink-2);font-size:14.5px;line-height:1.5;margin-bottom:26px}
+  .phonefield{display:flex;border:var(--edge);border-radius:10px;background:#fff;overflow:hidden;margin:8px 0 16px;box-shadow:var(--shadow)}
+  .phonefield span{padding:14px 12px;background:var(--paper-2);border-right:var(--edge);font-weight:700}
+  .phonefield input{flex:1;border:none;padding:14px 12px;font:500 16px var(--f-body);background:transparent;min-width:0}
+  .phonefield input:focus{outline:none}
+  .otp{display:flex;gap:10px;margin:10px 0 8px}
+  .otp div{
+    flex:1;aspect-ratio:1/1.05;border:var(--edge);border-radius:10px;background:#fff;
+    display:flex;align-items:center;justify-content:center;font:700 26px var(--f-px)
+  }
+  .otp div.f{background:var(--red-soft);color:var(--red-deep);animation:pop .18s ease-out}
+  @keyframes pop{from{transform:scale(.8)}to{transform:scale(1)}}
+  .otp-meta{font-size:12.5px;color:var(--ink-2);margin-bottom:18px}
+
+  /* ---------- home ---------- */
+  .hhead{display:flex;justify-content:space-between;align-items:center;padding:8px 18px 4px}
+  .hname{font-size:28px;margin-top:2px}
+  .avatar{position:relative;width:48px;height:48px;border:var(--edge);border-radius:12px;background:var(--red-soft);box-shadow:2px 2px 0 var(--ink);font:700 16px var(--f-px);color:var(--red-deep)}
+  .avgroup{position:absolute;right:-8px;bottom:-8px;background:var(--red);color:#fff;border:var(--edge);border-radius:6px;font:400 9px var(--f-mono);padding:2px 4px}
+  .hero{
+    margin:16px 18px 0;background:var(--red);color:#fff;border:var(--edge);border-radius:14px;box-shadow:4px 4px 0 var(--ink);
+    padding:18px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;position:relative;overflow:hidden
+  }
+  .hero h2{font-size:26px}
+  .hero p{font-size:13.5px;line-height:1.45;color:#FFE1E3;margin-top:4px}
+  .hero-art{grid-row:1/3;grid-column:2;align-self:center}
+  .hero .btn{grid-column:1/3;margin-top:14px}
+  .hero::before{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 6px,transparent 6px 12px)}
+
+  .active-req{margin:16px 18px 0;display:flex;gap:12px;align-items:center;text-align:left;width:calc(100% - 36px);background:var(--ink);color:#fff;border:var(--edge);border-radius:12px;padding:14px;box-shadow:3px 3px 0 var(--red)}
+  .active-req .t1{font-weight:700;font-size:14.5px}
+  .active-req .t2{font-size:12.5px;color:#E7D2D5;margin-top:2px}
+  .live-dot{width:10px;height:10px;border-radius:50%;background:#5BE39B;flex-shrink:0;animation:twinkle 1s steps(2) infinite}
+
+  .status .big{font:700 22px var(--f-px);margin-top:4px}
+  .banklist{display:flex;flex-direction:column;gap:10px;padding:0 18px}
+  .bankrow{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:#fff;border:var(--edge);border-radius:12px;padding:12px;box-shadow:2px 2px 0 var(--ink)}
+  .bankrow .bn{font-weight:700;font-size:14px}
+  .bankrow .bm{font-size:12px;color:var(--ink-2);margin-top:2px}
+  .bankrow .grow{flex:1;min-width:0}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 24px}
+  .tile{background:#fff;border:var(--edge);border-radius:12px;padding:12px 14px}
+  .tile .v{font:700 26px var(--f-px)}
+  .tile .k{font-size:12px;color:var(--ink-2)}
+
+  /* ---------- request ---------- */
+  .fieldset{padding:0 18px;margin-bottom:22px}
+  .fieldset > .lbl{display:block;margin-bottom:10px}
+  .ggrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .gbtn{
+    height:52px;border:var(--edge);border-radius:10px;background:#fff;font:700 19px var(--f-px);
+    box-shadow:2px 2px 0 var(--ink);transition:transform .07s
+  }
+  .gbtn.on{background:var(--red);color:#fff;box-shadow:3px 3px 0 var(--ink);transform:translate(-1px,-1px)}
+  .compat{margin-top:10px;font-size:12.5px;color:var(--ink-2)}
+  .compat b{color:var(--ink)}
+  .stepper{display:flex;align-items:center;border:var(--edge);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink);overflow:hidden}
+  .stepper button{width:56px;height:50px;font:700 22px var(--f-px);background:var(--paper-2)}
+  .stepper button:first-child{border-right:var(--edge)}
+  .stepper button:last-child{border-left:var(--edge)}
+  .stepper button:disabled{color:var(--ink-3);cursor:not-allowed}
+  .stepper .val{flex:1;text-align:center;font:700 20px var(--f-px)}
+  .stepper .val small{font:500 13px var(--f-body);color:var(--ink-2);margin-left:4px}
+  .select{width:100%;appearance:none;border:var(--edge);border-radius:10px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 3' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h5v1H4v1H3v1H2V2H1V1H0z' fill='%232A1418'/%3E%3C/svg%3E") no-repeat right 14px center/12px;padding:14px 40px 14px 14px;font:500 15px var(--f-body);color:var(--ink);box-shadow:2px 2px 0 var(--ink)}
+  .urg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .ubtn{border:var(--edge);border-radius:10px;background:#fff;padding:10px 6px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+  .ubtn .u1{font:700 15px var(--f-px)}
+  .ubtn .u2{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+  .ubtn.on.critical{background:var(--red-soft);color:var(--red-deep)}
+  .ubtn.on.urgent{background:var(--gold-soft);color:var(--gold)}
+  .ubtn.on.planned{background:var(--mint-soft);color:var(--mint)}
+  .ubtn.on{box-shadow:3px 3px 0 var(--ink);transform:translate(-1px,-1px)}
+  .ubtn.on .u2{color:inherit}
+
+  /* ---------- matching ---------- */
+  .seg{display:flex;border:var(--edge);border-radius:10px;overflow:hidden;background:#fff}
+  .seg button{padding:8px 12px;font:400 10.5px var(--f-mono)}
+  .seg button.on{background:var(--ink);color:#fff}
+  .summary{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0 18px 14px}
+  .group-h{display:flex;align-items:baseline;justify-content:space-between;padding:4px 18px 10px}
+  .group-h h3{font-size:16px}
+  .dlist{display:flex;flex-direction:column;gap:12px;padding:0 18px}
+  .dcard{background:#fff;border:var(--edge);border-radius:12px;box-shadow:2px 2px 0 var(--ink);transition:transform .07s, box-shadow .07s}
+  .dcard.sel{box-shadow:4px 4px 0 var(--red);transform:translate(-1px,-1px)}
+  .dmain{display:flex;align-items:center;gap:12px;width:100%;padding:12px;text-align:left}
+  .check{width:22px;height:22px;border:var(--edge);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff}
+  .dcard.sel .check{background:var(--red)}
+  .dav{width:42px;height:42px;border:var(--edge);border-radius:10px;background:var(--red-soft);color:var(--red-deep);font:800 18px var(--f-px);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .dav.sm{width:34px;height:34px;font-size:15px}
+  .dinfo{flex:1;min-width:0}
+  .dname{font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px}
+  .vb{font:400 9px var(--f-mono);background:var(--mint);color:#fff;padding:2px 4px;border-radius:4px}
+  .dmeta{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+  .dscore{font:700 26px var(--f-px);text-align:right;line-height:1}
+  .dscore small{font-size:13px}
+  .dscore .sl{display:block;font:400 9px var(--f-mono);color:var(--ink-3);margin-top:3px}
+  .dscore.hi{color:var(--mint)}
+  .dscore.mid{color:var(--gold)}
+  .why{display:flex;align-items:center;gap:6px;width:100%;border-top:1.5px dashed var(--ink-3);padding:9px 12px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+  .why .car{font-family:var(--f-mono);font-size:10px;transition:transform .15s}
+  .why[aria-expanded="true"] .car{transform:rotate(90deg)}
+  .bd{padding:0 12px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:7px 10px;align-items:center;font-size:12px}
+  .bd .bar{height:10px;border:1.5px solid var(--ink);background:var(--grey-soft);position:relative}
+  .bd .bar i{position:absolute;inset:0 auto 0 0;background:var(--red)}
+  .bd .pts{font-family:var(--f-mono);font-size:10px;color:var(--ink-2);text-align:right;min-width:38px}
+  .later{display:flex;align-items:center;gap:12px;padding:12px;border:2px dashed var(--ink-3);border-radius:12px;color:var(--ink-2)}
+  .later .dav{filter:grayscale(1);opacity:.7}
+  .empty{text-align:center;padding:26px 24px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .empty h3{font-size:18px}
+
+  /* ---------- map ---------- */
+  .mapwrap{margin:0 18px;border:var(--edge);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;background:#CFE9C7}
+  .pmap{position:relative;aspect-ratio:36/28}
+  .pmap svg.mapsvg{position:absolute;inset:0;width:100%;height:100%}
+  .pin{position:absolute;transform:translate(-50%,-100%);padding:2px;transition:transform .1s}
+  .pin:hover,.pin.on{transform:translate(-50%,-100%) scale(1.25);z-index:3}
+  .you{position:absolute;width:14px;height:14px;border-radius:50%;background:#2B5BD7;border:2px solid #fff;outline:2px solid var(--ink);transform:translate(-50%,-50%);z-index:2}
+  .you::before{content:'';position:absolute;inset:-9px;border:2px solid #2B5BD7;border-radius:50%;animation:ping 1.8s ease-out infinite}
+  @keyframes ping{from{opacity:.9;transform:scale(.5)}to{opacity:0;transform:scale(1.6)}}
+  .mapinfo{border-top:var(--edge);background:#fff;padding:12px 14px;min-height:62px;display:flex;align-items:center;gap:12px;font-size:13px}
+  .mapinfo .grow{flex:1}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 18px 0;font-size:12px;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .stock{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:10px}
+  .stock div{border:1.5px solid var(--ink);border-radius:4px;text-align:center;font:400 9px var(--f-mono);padding:5px 0}
+  .stock .high{background:var(--mint-soft);color:var(--mint)}
+  .stock .low{background:var(--gold-soft);color:var(--gold)}
+  .stock .out{background:var(--grey-soft);color:var(--ink-3);text-decoration:line-through}
+  .stock .me{outline:2px solid var(--red);outline-offset:1px}
+
+  /* ---------- alert / tracking ---------- */
+  .alert-head{text-align:center;padding:10px 24px 4px;display:flex;flex-direction:column;align-items:center}
+  .alert-head h2{font-size:25px;margin-top:14px;line-height:1.15}
+  .alert-head p{font-size:13.5px;color:var(--ink-2);margin-top:6px;line-height:1.45;max-width:290px}
+  .blink,.breathe{animation:breathe 2.6s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  .stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:18px 18px 4px}
+  .stats3 > div{background:#fff;border:var(--edge);border-radius:10px;padding:10px;text-align:center}
+  .stats3 .v{font:700 22px var(--f-px)}
+  .stats3 .k{font:400 9px var(--f-mono);color:var(--ink-2);margin-top:2px}
+  .accepted{margin:14px 18px 0;background:var(--mint-soft);border:var(--edge);border-radius:12px;box-shadow:3px 3px 0 var(--mint);padding:14px;animation:enter .25s}
+  .accepted .who{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .accepted .n{font-weight:700;font-size:16px}
+  .accepted .m{font-size:12.5px;color:var(--ink-2)}
+  .accepted .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .timeline{padding:20px 22px 6px}
+  .ts{display:flex;gap:12px;padding-bottom:16px;position:relative}
+  .ts:not(:last-child)::before{content:'';position:absolute;left:10px;top:24px;bottom:2px;border-left:2px dotted var(--ink-3)}
+  .ts.done:not(:last-child)::before{border-left:2px solid var(--ink)}
+  .tdot{width:22px;height:22px;border:var(--edge);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff}
+  .ts.done .tdot{background:var(--mint)}
+  .ts.now .tdot{background:var(--red)}
+  .ts.now .tdot i{width:6px;height:6px;background:#fff;animation:twinkle .8s steps(2) infinite}
+  .ts .t1{font-weight:700;font-size:14px}
+  .ts .t2{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+  .ts.wait .t1{color:var(--ink-3)}
+
+  /* ---------- profile ---------- */
+  .phero{display:flex;flex-direction:column;align-items:center;padding:4px 18px 18px;text-align:center}
+  .pav{width:84px;height:84px;border:var(--edge);border-radius:18px;background:var(--red-soft);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font:800 30px var(--f-px);color:var(--red-deep);margin-bottom:12px}
+  .phero h2{font-size:24px}
+  .plist .li{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1.5px dashed var(--grey-soft);font-size:14px;gap:12px}
+  .plist .li:last-child{border-bottom:none;padding-bottom:0}
+  .plist .li:first-child{padding-top:0}
+  .plist .k{color:var(--ink-2)}
+  .plist .v{font-weight:700}
+  .tog{width:52px;height:30px;border:var(--edge);border-radius:8px;background:var(--grey-soft);position:relative;flex-shrink:0}
+  .tog i{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border:var(--edge);border-radius:4px;transition:left .15s ease}
+  .tog.on{background:var(--mint)}
+  .tog.on i{left:25px}
+  .tog:disabled{opacity:.55;cursor:not-allowed}
+  .note{display:flex;gap:10px;align-items:flex-start;background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:12.5px;color:#5E3A08;line-height:1.45;margin-top:12px}
+
+  .caption{text-align:center;margin-top:18px;color:#6B5155;font:400 10.5px var(--f-mono);letter-spacing:.03em}
+
+  @media (max-width:440px){
+    body{padding:0;background:var(--paper)}
+    .phone{width:100%;height:100dvh;border:none;border-radius:0;box-shadow:none}
+    .island{display:none}
+    .caption{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="statusbar" id="statusbar"><span>8:15</span><div class="island"></div><span>5G ▮▮▮</span></div>
+
+  <div class="screens">
+    <!-- 1. SPLASH -->
+    <section class="screen active" id="screen-splash">
+      <div class="stage">
+        <div id="splashDrop" class="bob"></div>
+        <div class="ground"></div>
+        <h1>BloodAid</h1>
+        <p>Verified donors near you, alerted in seconds.</p>
+      </div>
+      <button class="btn btn-white" onclick="go('login')">Get started</button>
+    </section>
+
+    <!-- 2. LOGIN -->
+    <section class="screen" id="screen-login">
+      <div class="body">
+        <div id="loginDrop"></div>
+        <h2>Sign in</h2>
+        <p class="sub">We'll text a 4-digit code to confirm it's you. No password needed.</p>
+        <div id="phoneStep">
+          <label class="lbl" for="phoneInput">Phone number</label>
+          <div class="phonefield"><span>+91</span><input id="phoneInput" inputmode="tel" value="98765 43210" autocomplete="tel"></div>
+          <button class="btn btn-red" onclick="sendOtp()">Send code</button>
+        </div>
+        <div id="otpStep" hidden>
+          <span class="lbl">Enter code</span>
+          <div class="otp" id="otpBoxes"><div></div><div></div><div></div><div></div></div>
+          <div class="otp-meta" id="otpMeta"></div>
+          <button class="btn btn-red" id="verifyBtn" onclick="go('home',{reset:true})" disabled>Verify &amp; continue</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. HOME -->
+    <section class="screen" id="screen-home"><div id="homeBody"></div></section>
+
+    <!-- 4. REQUEST -->
+    <section class="screen" id="screen-request">
+      <div class="topbar"><button class="iconbtn" onclick="back()" aria-label="Back">←</button><h2>Request blood</h2></div>
+      <div class="fieldset">
+        <span class="lbl">Blood group needed</span>
+        <div class="ggrid" id="groupGrid"></div>
+        <div class="compat" id="compatHint"></div>
+      </div>
+      <div class="fieldset">
+        <span class="lbl">Units</span>
+        <div class="stepper">
+          <button onclick="setUnits(-1)" id="uMinus" aria-label="Fewer units">−</button>
+          <div class="val" id="unitsVal"></div>
+          <button onclick="setUnits(1)" id="uPlus" aria-label="More units">+</button>
+        </div>
+      </div>
+      <div class="fieldset">
+        <label class="lbl" for="hospitalSel">Hospital</label>
+        <select class="select" id="hospitalSel" onchange="S.hospital=this.value"></select>
+      </div>
+      <div class="fieldset">
+        <span class="lbl">How soon?</span>
+        <div class="urg" id="urgGrid"></div>
+      </div>
+      <div class="footer">
+        <div class="hint" id="reqHint"></div>
+        <button class="btn btn-red" onclick="findDonors()">Find donors →</button>
+      </div>
+    </section>
+
+    <!-- 5. MATCHING -->
+    <section class="screen" id="screen-matching">
+      <div class="topbar">
+        <button class="iconbtn" onclick="back()" aria-label="Back">←</button>
+        <h2 id="matchTitle">Donors</h2>
+        <div class="seg" role="tablist">
+          <button id="segList" class="on" onclick="setView('list')">List</button>
+          <button id="segMap" onclick="setView('map')">Map</button>
+        </div>
+      </div>
+      <div class="summary" id="matchSummary"></div>
+      <div id="matchBody"></div>
+      <div class="footer">
+        <div class="row">
+          <button class="btn btn-white btn-sm" id="selAllBtn" onclick="toggleAll()">Select all</button>
+          <button class="btn btn-red" id="alertBtn" onclick="sendAlert()">Alert donors</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ALERT / TRACKING -->
+    <section class="screen" id="screen-alert">
+      <div class="topbar"><button class="iconbtn" onclick="go('home',{reset:true})" aria-label="Close">✕</button><h2>Your request</h2></div>
+      <div id="alertBody" style="display:flex;flex-direction:column;flex:1"></div>
+    </section>
+
+    <!-- 7. MAP TAB -->
+    <section class="screen" id="screen-map">
+      <div class="topbar"><h2>Nearby</h2></div>
+      <div id="mapTabBody"></div>
+    </section>
+
+    <!-- 8. PROFILE TAB -->
+    <section class="screen" id="screen-profile"><div id="profileBody"></div></section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab" data-tab="home" onclick="tab('home')"><span id="ic-home"></span>Home</button>
+    <button class="tab" data-tab="map" onclick="tab('map')"><span id="ic-map"></span>Nearby</button>
+    <div class="tab-req"><button onclick="go('request')" aria-label="Request blood" id="ic-req"></button></div>
+    <button class="tab" data-tab="alert" onclick="openRequest()"><span id="ic-bell"></span>Request</button>
+    <button class="tab" data-tab="profile" onclick="tab('profile')"><span id="ic-user"></span>Profile</button>
+  </nav>
+</div>
+
+<div class="caption">BloodAid prototype · dummy data · live match-score engine</div>
+
+<script>
+/* =========================================================
+   PIXEL SPRITES  (each char = one pixel, '.' = transparent)
+   ========================================================= */
+const PAL = {k:'#2A1418',r:'#D7263D',d:'#A3172B',w:'#FFFFFF',p:'#FFC2C9',g:'#1F7F57'};
+const NS = 'vector-effect="non-scaling-stroke"';
+// name: [legacy width, legacy height, viewBox, draw(colors)] -> rendered size = legacy size * scale
+const ICONS = {
+  drop:[13,17,'0 0 26 34',C=>`<path d="M13 2C18 9 23 15 23 21.5A10 10 0 0 1 3 21.5C3 15 8 9 13 2Z" fill="${C.r}" stroke="${C.k}" stroke-width="2" stroke-linejoin="round" ${NS}/><path d="M8 21.5a5 5 0 0 0 3.2 4.8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".85"/>`],
+  dropW:[13,17,'0 0 26 34',C=>`<path d="M13 2C18 9 23 15 23 21.5A10 10 0 0 1 3 21.5C3 15 8 9 13 2Z" fill="#fff" stroke="${C.k}" stroke-width="2" stroke-linejoin="round" ${NS}/><path d="M8 21.5a5 5 0 0 0 3.2 4.8" fill="none" stroke="${C.p}" stroke-width="2.4" stroke-linecap="round"/>`],
+  heart:[11,10,'0 0 24 22',C=>`<path d="M12 20.5S2.5 14.6 2.5 8.2A4.9 4.9 0 0 1 12 6a4.9 4.9 0 0 1 9.5 2.2C21.5 14.6 12 20.5 12 20.5Z" fill="${C.r}" stroke="${C.k}" stroke-width="2" stroke-linejoin="round" ${NS}/>`],
+  siren:[13,12,'0 0 32 28',C=>`<path d="M16 5C19 9.5 22 13 22 17A6 6 0 0 1 10 17C10 13 13 9.5 16 5Z" fill="${C.r}" stroke="${C.k}" stroke-width="2" stroke-linejoin="round" ${NS}/><path d="M6.5 9a12 12 0 0 0 0 14M2.5 6a17 17 0 0 0 0 20M25.5 9a12 12 0 0 1 0 14M29.5 6a17 17 0 0 1 0 20" fill="none" stroke="${C.k}" stroke-width="2" stroke-linecap="round" ${NS}/>`],
+  hosp:[13,12,'0 0 26 24',C=>`<rect x="2" y="3" width="22" height="19" rx="4" fill="#fff" stroke="${C.k}" stroke-width="2" ${NS}/><rect x="10.5" y="7" width="5" height="11" rx="1.2" fill="${C.r}"/><rect x="7.5" y="10" width="11" height="5" rx="1.2" fill="${C.r}"/>`],
+  person:[11,11,'0 0 24 24',C=>`<circle cx="12" cy="12" r="10.5" fill="${C.r}" stroke="${C.k}" stroke-width="2" ${NS}/><circle cx="12" cy="10" r="3.6" fill="#fff"/><path d="M5.8 19.2a6.4 6.4 0 0 1 12.4 0Z" fill="#fff"/>`],
+  personG:[11,11,'0 0 24 24',C=>`<circle cx="12" cy="12" r="10.5" fill="${C.g}" stroke="${C.k}" stroke-width="2" ${NS}/><path d="M7 12.5l3.3 3.3L17 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`],
+  tick:[7,6,'0 0 14 12',C=>`<path d="M2 6.5l3.5 3.5L12 2.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`],
+  tickK:[7,6,'0 0 14 12',C=>`<path d="M2 6.5l3.5 3.5L12 2.5" fill="none" stroke="${C.k}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`],
+  pinDonor:[7,9,'0 0 14 18',C=>`<path d="M7 17S1.5 11 1.5 7A5.5 5.5 0 0 1 12.5 7C12.5 11 7 17 7 17Z" fill="${C.r}" stroke="${C.k}" stroke-width="1.75" stroke-linejoin="round" ${NS}/><circle cx="7" cy="7" r="2.1" fill="#fff"/>`],
+  pinBank:[7,7,'0 0 14 14',C=>`<rect x="1" y="1" width="12" height="12" rx="3" fill="#fff" stroke="${C.k}" stroke-width="1.75" ${NS}/><rect x="5.9" y="3.6" width="2.2" height="6.8" rx=".6" fill="${C.r}"/><rect x="3.6" y="5.9" width="6.8" height="2.2" rx=".6" fill="${C.r}"/>`],
+  pinDest:[7,7,'0 0 14 14',C=>`<rect x="1" y="1" width="12" height="12" rx="3" fill="${C.r}" stroke="${C.k}" stroke-width="1.75" ${NS}/><path d="M4.8 3.8v6.4M9.2 3.8v6.4M4.8 7h4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>`],
+  home:[9,9,'0 0 24 24',C=>`<path d="M3.5 11L12 4l8.5 7M6 9.5V20h12V9.5M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`],
+  pin:[9,9,'0 0 24 24',C=>`<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/>`],
+  bell:[9,9,'0 0 24 24',C=>`<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15ZM10 20.5a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`],
+  user:[9,9,'0 0 24 24',C=>`<circle cx="12" cy="8" r="3.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`],
+  plusW:[8,8,'0 0 16 16',C=>`<path d="M8 2.5v11M2.5 8h11" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>`],
+};
+function sprite(name, px=4, cls='', over){
+  const [w,h,vb,draw] = ICONS[name], C = Object.assign({}, PAL, over||{});
+  return `<svg class="px ${cls}" viewBox="${vb}" width="${Math.round(w*px)}" height="${Math.round(h*px)}" aria-hidden="true">${draw(C)}</svg>`;
+}
+
+/* =========================================================
+   DATA  (edit freely)
+   ========================================================= */
+const TODAY = new Date(2026, 9, 26);           // fixed demo date so the story stays consistent
+const DAY = 864e5;
+const COOLDOWN_DAYS = 84;                       // prototype rule
+
+const USER = { name:'Aarav Menon', first:'Aarav', initials:'AM', group:'O+', city:'Chennai, Tamil Nadu',
+  lastDonation:new Date(2026,7,12), responseRate:92, responses:18, missed:2, verified:true };
+
+// recipient group -> donor groups that are compatible (red cells)
+const COMPAT = {
+  'O-':['O-'], 'O+':['O+','O-'],
+  'A-':['A-','O-'], 'A+':['A+','A-','O+','O-'],
+  'B-':['B-','O-'], 'B+':['B+','B-','O+','O-'],
+  'AB-':['AB-','A-','B-','O-'], 'AB+':['AB+','AB-','A+','A-','B+','B-','O+','O-']
+};
+const GROUPS = ['A+','A-','B+','B-','O+','O-','AB+','AB-'];
+
+// weights sum to 100
+const WEIGHTS = { blood:30, availability:20, distance:20, verification:15, reliability:10, eligibility:5 };
+
+// x,y are positions on the 36x28 pixel map; "you" are at 18,14
+const DONORS = [
+  { id:'rahul',  name:'Rahul',  group:'O+',  km:1.2, x:15, y:11, available:true,  verified:true,  reliability:96 },
+  { id:'priya',  name:'Priya',  group:'O-',  km:2.8, x:26, y:8,  available:true,  verified:true,  reliability:81 },
+  { id:'kavya',  name:'Kavya',  group:'O+',  km:3.4, x:8,  y:20, available:true,  verified:true,  reliability:74, cooldownUntil:new Date(2026,10,9) },
+  { id:'imran',  name:'Imran',  group:'B+',  km:2.0, x:22, y:19, available:true,  verified:true,  reliability:88 },
+  { id:'divya',  name:'Divya',  group:'A+',  km:4.6, x:31, y:21, available:true,  verified:true,  reliability:90 },
+  { id:'sanjay', name:'Sanjay', group:'O+',  km:5.7, x:4,  y:5,  available:false, verified:true,  reliability:65 },
+  { id:'meera',  name:'Meera',  group:'AB+', km:1.9, x:13, y:17, available:true,  verified:true,  reliability:84 },
+  { id:'vikram', name:'Vikram', group:'O-',  km:6.3, x:33, y:4,  available:true,  verified:false, reliability:70 },
+];
+
+const BANKS = [
+  { id:'b1', name:'City Central Blood Bank', km:1.4, x:21, y:11, open:'Open 24 hrs',
+    stock:{'A+':'high','A-':'low','B+':'high','B-':'out','O+':'high','O-':'low','AB+':'high','AB-':'out'} },
+  { id:'b2', name:'Sri Ramachandra Blood Centre', km:2.9, x:9, y:10, open:'Open till 9 pm',
+    stock:{'A+':'high','A-':'out','B+':'low','B-':'low','O+':'low','O-':'out','AB+':'high','AB-':'low'} },
+  { id:'b3', name:'Apollo Blood Bank', km:4.1, x:32, y:24, open:'Open 24 hrs',
+    stock:{'A+':'low','A-':'high','B+':'high','B-':'out','O+':'out','O-':'low','AB+':'low','AB-':'out'} },
+];
+const HOSPITALS = [
+  { name:'ABC General Hospital', km:0.8, x:20, y:16 },
+  { name:'Government Hospital, Tirupporur', km:2.4, x:11, y:15 },
+  { name:'Chettinad Health City', km:3.2, x:27, y:13 },
+];
+const URGENCY = {
+  critical:{ label:'Critical', sub:'Within 1 hr', pill:'red' },
+  urgent:  { label:'Urgent',   sub:'Today',       pill:'gold' },
+  planned: { label:'Planned',  sub:'This week',   pill:'mint' },
+};
+
+/* =========================================================
+   STATE + HELPERS
+   ========================================================= */
+const S = { group:'O+', units:2, hospital:HOSPITALS[0].name, urgency:'critical', view:'list',
+            selected:new Set(), openWhy:new Set(), request:null, timers:[], remind:true,
+            history:[], current:'splash', mapFocus:{} };
+const $ = q => document.querySelector(q);
+const gl = g => g.replace('-','−');
+const fmt = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const nextEligible = d => new Date(d.getTime() + COOLDOWN_DAYS*DAY);
+const daysBetween = (a,b) => Math.ceil((b-a)/DAY);
+const isEligible = d => !d.cooldownUntil || d.cooldownUntil <= TODAY;
+const hospital = () => HOSPITALS.find(h=>h.name===S.hospital) || HOSPITALS[0];
+
+let toastT;
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+const TAB_SCREENS = ['home','map','profile'];
+function show(id, dir){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active','back'));
+  const el = $('#screen-'+id);
+  if(dir==='back') el.classList.add('back');
+  el.classList.add('active'); el.scrollTop = 0;
+  S.current = id;
+  RENDER[id] && RENDER[id]();
+  const tb = $('#tabbar');
+  tb.classList.toggle('show', TAB_SCREENS.includes(id));
+  tb.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===id));
+  $('#statusbar').classList.toggle('light', id==='splash');
+}
+function go(id, opts={}){
+  if(opts.reset) S.history = [];
+  else if(S.current && S.current!==id) S.history.push(S.current);
+  show(id);
+}
+function back(){ show(S.history.pop() || 'home', 'back'); }
+function tab(id){ S.history = []; show(id); }
+function openRequest(){
+  if(S.request) go('alert');
+  else { toast('No active request. Tap the red button to start one.'); }
+}
+
+/* =========================================================
+   LOGIN
+   ========================================================= */
+let resendT;
+function sendOtp(){
+  $('#phoneStep').hidden = true; $('#otpStep').hidden = false;
+  const boxes = [...document.querySelectorAll('#otpBoxes div')];
+  boxes.forEach(b=>{b.textContent='';b.classList.remove('f')});
+  '4217'.split('').forEach((n,i)=>setTimeout(()=>{ boxes[i].textContent=n; boxes[i].classList.add('f');
+    if(i===3) $('#verifyBtn').disabled=false; }, 500+i*260));
+  let s=30; clearInterval(resendT);
+  const meta=()=>$('#otpMeta').innerHTML = `Sent to +91 ${$('#phoneInput').value} · `+
+    (s>0 ? `resend in 0:${String(s).padStart(2,'0')}` : `<button class="link" onclick="sendOtp()">Resend code</button>`)+
+    ` · <button class="link" onclick="changeNumber()">Change</button>`;
+  meta(); resendT=setInterval(()=>{s--; meta(); if(s<=0) clearInterval(resendT);},1000);
+}
+function changeNumber(){ clearInterval(resendT); $('#otpStep').hidden=true; $('#phoneStep').hidden=false; $('#verifyBtn').disabled=true; }
+
+/* =========================================================
+   MATCH ENGINE
+   ========================================================= */
+function distanceScore(km){ return km<=1 ? 1 : Math.max(0, 1-(km-1)/9); } // full within 1 km, 0 by 10 km
+function scoreDonor(d){
+  const parts = [
+    { k:'Blood match',  max:WEIGHTS.blood,        v: d.group===S.group ? 1 : 0.9 },
+    { k:'Availability', max:WEIGHTS.availability, v: d.available ? 1 : 0 },
+    { k:'Distance',     max:WEIGHTS.distance,     v: distanceScore(d.km) },
+    { k:'Verified',     max:WEIGHTS.verification, v: d.verified ? 1 : 0 },
+    { k:'Reliability',  max:WEIGHTS.reliability,  v: d.reliability/100 },
+    { k:'Eligibility',  max:WEIGHTS.eligibility,  v: isEligible(d) ? 1 : 0.3 },
+  ];
+  parts.forEach(p=>p.pts = p.v*p.max);
+  return { score: Math.round(parts.reduce((a,p)=>a+p.pts,0)), parts };
+}
+function getMatches(){
+  const ok = COMPAT[S.group];
+  const all = DONORS.filter(d=>ok.includes(d.group)).map(d=>({...d, ...scoreDonor(d)}));
+  return {
+    ready: all.filter(d=>isEligible(d) && d.available).sort((a,b)=>b.score-a.score),
+    later: all.filter(d=>!(isEligible(d) && d.available)),
+  };
+}
+
+/* =========================================================
+   PIXEL MAP
+   ========================================================= */
+const MW=36, MH=28;
+const MAP_SVG = (()=>{
+  const xs=[[0,12],[13,24],[25,36]], ys=[[0,9],[10,20],[21,28]];
+  let s=`<svg class="mapsvg" viewBox="0 0 ${MW} ${MH}" preserveAspectRatio="none" aria-hidden="true"><rect width="${MW}" height="${MH}" fill="#E9EFE3"/>`;
+  xs.forEach(([x0,x1],i)=>ys.forEach(([y0,y1],j)=>{
+    if((i===0&&j===0)||(i===1&&j===2)){            // parks
+      s+=`<rect x="${x0+.7}" y="${y0+.7}" width="${x1-x0-1.4}" height="${y1-y0-1.4}" rx="1.2" fill="#CFE5C4"/>`;
+      for(let k=0;k<6;k++) s+=`<circle cx="${x0+1.8+((k*37)%((x1-x0-3.4)*10))/10}" cy="${y0+1.8+((k*53)%((y1-y0-3.4)*10))/10}" r=".85" fill="#A9D19C"/>`;
+      return;
+    }
+    const mx=(x0+x1)/2, my=(y0+y1)/2;              // four building lots per block
+    [[x0,mx,y0,my],[mx,x1,y0,my],[x0,mx,my,y1],[mx,x1,my,y1]].forEach(([a,b,c,d],k)=>{
+      s+=`<rect x="${a+.6}" y="${c+.6}" width="${b-a-1.2}" height="${d-c-1.2}" rx=".7" fill="${(i+j+k)%3===0?'#EAD9CD':'#F3E9E0'}"/>`;
+    });
+  }));
+  s+=`<path d="M29 -1C31.5 6 26.5 10 29 16S31.5 24 28 29" fill="none" stroke="#A9D6EA" stroke-width="2.4" stroke-linecap="round"/>`;
+  const roads='M0 9.5H36M0 20.5H36M12.5 0V28M24.5 0V28';
+  s+=`<path d="${roads}" stroke="#D8C9BE" stroke-width="1.5"/><path d="${roads}" stroke="#FFFFFF" stroke-width="1.1"/>`;
+  return s+'</svg>';
+})();
+function mapHTML(key, {donors=[], banks=BANKS, dest=null}){
+  const pos = (x,y)=>`left:${(x+.5)/MW*100}%;top:${(y+.5)/MH*100}%`;
+  const f = S.mapFocus[key];
+  let pins = `<div class="you" style="${pos(18,14)}" title="You"></div>`;
+  if(dest) pins += `<button class="pin ${f==='dest'?'on':''}" style="${pos(dest.x,dest.y)}" onclick="focusPin('${key}','dest')" aria-label="${dest.name}">${sprite('pinDest',3)}</button>`;
+  banks.forEach(b=> pins += `<button class="pin ${f===b.id?'on':''}" style="${pos(b.x,b.y)}" onclick="focusPin('${key}','${b.id}')" aria-label="${b.name}">${sprite('pinBank',3)}</button>`);
+  donors.forEach(d=> pins += `<button class="pin ${f===d.id?'on':''}" style="${pos(d.x,d.y)}" onclick="focusPin('${key}','${d.id}')" aria-label="${d.name}">${sprite('pinDonor',3, '', S.selected.has(d.id)&&key==='match'?{r:'#D7263D'}:(key==='match'?{r:'#E98C98',d:'#C5606D'}:{}))}</button>`);
+  return `<div class="mapwrap"><div class="pmap">${MAP_SVG}${pins}</div><div class="mapinfo" id="info-${key}">${infoHTML(key, f, donors, dest)}</div></div>
+  <div class="legend"><span><i style="width:10px;height:10px;background:#2B5BD7;border:1.5px solid var(--ink);border-radius:50%"></i>You</span>
+  <span>${sprite('pinDonor',2)}Donor</span><span>${sprite('pinBank',2)}Blood bank</span>${dest?`<span>${sprite('pinDest',2)}Hospital</span>`:''}</div>`;
+}
+function infoHTML(key, id, donors, dest){
+  if(!id) return `<span class="muted">Tap a pin to see details.</span>`;
+  if(id==='dest') return `${sprite('pinDest',4)}<div class="grow"><b>${dest.name}</b><div class="muted small">Where blood is needed · ${dest.km} km</div></div>`;
+  const b = BANKS.find(x=>x.id===id);
+  if(b){ const st=b.stock[S.group]; return `${sprite('hosp',3)}<div class="grow"><b>${b.name}</b><div class="muted small">${b.km} km · ${b.open}</div></div><span class="pill ${st==='high'?'mint':st==='low'?'gold':'grey'}">${gl(S.group)} ${st==='high'?'in stock':st==='low'?'low':'out'}</span>`; }
+  const d = donors.find(x=>x.id===id);
+  if(!d) return '';
+  const sc = scoreDonor(d).score;
+  const sel = S.selected.has(d.id);
+  return `<span class="dav sm">${d.name[0]}</span><div class="grow"><b>${d.name}</b> · ${gl(d.group)}<div class="muted small">${d.km} km · ${sc}% match</div></div>`+
+    (key==='match' ? `<button class="btn ${sel?'btn-white':'btn-red'} btn-sm" onclick="toggleDonor('${d.id}')">${sel?'Remove':'Add'}</button>` : '');
+}
+function focusPin(key,id){ S.mapFocus[key] = S.mapFocus[key]===id ? null : id; RENDER[S.current](); }
+
+/* =========================================================
+   SCREENS
+   ========================================================= */
+const RENDER = {};
+
+RENDER.home = ()=>{
+  const next = nextEligible(USER.lastDonation), left = daysBetween(TODAY,next), ready = left<=0;
+  const segs = 12, filled = ready?segs:Math.round((COOLDOWN_DAYS-left)/COOLDOWN_DAYS*segs);
+  const r = S.request;
+  $('#homeBody').innerHTML = `
+    <header class="hhead">
+      <div><div class="lbl">Good evening</div><h1 class="hname">${USER.first}</h1></div>
+      <button class="avatar" onclick="tab('profile')" aria-label="Open profile">${USER.initials}<span class="avgroup">${gl(USER.group)}</span></button>
+    </header>
+    ${r ? `<button class="active-req" onclick="go('alert')"><span class="live-dot"></span>
+      <div style="flex:1"><div class="t1">${gl(r.group)} request · ${requestHeadline(r)}</div><div class="t2">${r.hospital} · tap to track</div></div><span class="disp">→</span></button>` : ''}
+    <section class="hero">
+      <div><h2>Need blood?</h2><p>Alert verified, compatible donors nearby in under a minute.</p></div>
+      <div class="hero-art">${sprite('dropW',5,'bob')}</div>
+      <button class="btn btn-white" onclick="go('request')">Request blood →</button>
+    </section>
+
+    <div class="section-h"><h3>You as a donor</h3><button class="link" onclick="tab('profile')">Details</button></div>
+    <section class="card status" style="margin:0 18px">
+      <div class="row between">
+        <div><div class="lbl">Next donation</div><div class="big">${ready?'Ready to donate':left+' days to go'}</div></div>
+        <span class="pill ${ready?'mint':'gold'}">${ready?'Eligible':'Cooldown'}</span>
+      </div>
+      <div class="segbar ${ready?'mintbar':''}">${Array.from({length:segs},(_,i)=>`<i class="${i<filled?'on':''}"></i>`).join('')}</div>
+      <div class="row between small muted"><span>Last gave ${fmt(USER.lastDonation)}</span><span>Eligible ${fmt(next)}</span></div>
+    </section>
+
+    <div class="section-h"><h3>Blood banks near you</h3><button class="link" onclick="tab('map')">Map</button></div>
+    <div class="banklist">${BANKS.map(b=>{const st=b.stock[USER.group];return `
+      <button class="bankrow" onclick="S.mapFocus.tab='${b.id}';tab('map')">${sprite('hosp',3)}
+        <div class="grow"><div class="bn">${b.name}</div><div class="bm">${b.km} km · ${b.open}</div></div>
+        <span class="pill ${st==='high'?'mint':st==='low'?'gold':'grey'}">${gl(USER.group)} ${st==='high'?'✓':st==='low'?'low':'out'}</span>
+      </button>`}).join('')}</div>
+
+    <div class="section-h"><h3>Your impact</h3></div>
+    <div class="tiles">
+      <div class="tile"><div class="v">${USER.responses}</div><div class="k">Emergency responses</div></div>
+      <div class="tile"><div class="v">${USER.responseRate}%</div><div class="k">Response rate</div></div>
+    </div>`;
+};
+
+RENDER.request = ()=>{
+  $('#groupGrid').innerHTML = GROUPS.map(g=>`<button class="gbtn ${g===S.group?'on':''}" onclick="S.group='${g}';RENDER.request()" aria-pressed="${g===S.group}">${gl(g)}</button>`).join('');
+  $('#compatHint').innerHTML = `Can receive from: <b>${COMPAT[S.group].map(gl).join(', ')}</b>`;
+  $('#unitsVal').innerHTML = `${S.units}<small>${S.units===1?'unit':'units'}</small>`;
+  $('#uMinus').disabled = S.units<=1; $('#uPlus').disabled = S.units>=6;
+  const sel = $('#hospitalSel');
+  if(!sel.options.length) sel.innerHTML = HOSPITALS.map(h=>`<option>${h.name}</option>`).join('');
+  sel.value = S.hospital;
+  $('#urgGrid').innerHTML = Object.entries(URGENCY).map(([k,u])=>`<button class="ubtn ${k} ${k===S.urgency?'on':''}" onclick="S.urgency='${k}';RENDER.request()" aria-pressed="${k===S.urgency}"><div class="u1">${u.label}</div><div class="u2">${u.sub}</div></button>`).join('');
+  const n = getMatches().ready.length;
+  $('#reqHint').innerHTML = n ? `<b>${n}</b> compatible donor${n>1?'s':''} ready nearby` : `No ready donors nearby — we'll show blood banks`;
+};
+function setUnits(d){ S.units = Math.min(6, Math.max(1, S.units+d)); RENDER.request(); }
+function findDonors(){
+  const {ready} = getMatches();
+  S.selected = new Set(ready.slice(0,3).map(d=>d.id));
+  S.openWhy = new Set(); S.view='list'; S.mapFocus.match=null;
+  go('matching');
+}
+
+RENDER.matching = ()=>{
+  const {ready, later} = getMatches();
+  const u = URGENCY[S.urgency];
+  $('#matchTitle').textContent = 'Donors · '+gl(S.group);
+  $('#segList').classList.toggle('on', S.view==='list');
+  $('#segMap').classList.toggle('on', S.view==='map');
+  $('#matchSummary').innerHTML = `<span class="pill red">${gl(S.group)} · ${S.units} unit${S.units>1?'s':''}</span>
+    <span class="pill ${u.pill}">${u.label}</span><span class="pill grey">${hospital().name}</span>
+    <button class="link" onclick="back()">Edit</button>`;
+
+  let html = '';
+  if(S.view==='map'){
+    html = mapHTML('match',{donors:ready, banks:BANKS.filter(b=>b.stock[S.group]!=='out'), dest:hospital()});
+    html += `<p class="pad small muted" style="margin-top:10px">Faded pins aren't selected. Tap one to add it to the alert.</p>`;
+  } else {
+    if(ready.length){
+      html += `<div class="group-h"><h3>Ready to donate</h3><span class="lbl">${S.selected.size} of ${ready.length} selected</span></div>
+      <div class="dlist">${ready.map(donorCard).join('')}</div>`;
+    } else {
+      html += `<div class="empty">${sprite('drop',4)}<h3>No ready donors nearby</h3><p class="small muted">Nobody compatible is available right now. These blood banks may have ${gl(S.group)} in stock.</p></div>`;
+    }
+    if(later.length){
+      html += `<div class="group-h" style="margin-top:20px"><h3>Not available now</h3><span class="lbl">${later.length}</span></div>
+      <div class="dlist">${later.map(d=>`<div class="later"><span class="dav">${d.name[0]}</span>
+        <div class="dinfo"><div class="dname">${d.name} · ${gl(d.group)}</div>
+        <div class="dmeta">${!isEligible(d)?'In cooldown · eligible from '+fmt(d.cooldownUntil):'Not taking requests right now'}</div></div></div>`).join('')}</div>`;
+    }
+    const banks = BANKS.filter(b=>b.stock[S.group]!=='out');
+    if(banks.length){
+      html += `<div class="group-h" style="margin-top:20px"><h3>Blood banks with ${gl(S.group)}</h3></div>
+      <div class="banklist">${banks.map(b=>`<div class="bankrow">${sprite('hosp',3)}
+        <div class="grow"><div class="bn">${b.name}</div><div class="bm">${b.km} km · ${b.stock[S.group]==='high'?'In stock':'Low stock'}</div></div>
+        <button class="btn btn-white btn-sm" onclick="toast('Calling ${b.name}… (demo)')">Call</button></div>`).join('')}</div>`;
+    }
+  }
+  $('#matchBody').innerHTML = html;
+  const n = S.selected.size;
+  const btn = $('#alertBtn');
+  btn.disabled = n===0;
+  btn.textContent = n ? `Alert ${n} donor${n>1?'s':''} →` : 'Select donors to alert';
+  $('#selAllBtn').textContent = (n===ready.length && n>0) ? 'Clear' : 'Select all';
+  $('#selAllBtn').disabled = ready.length===0;
+};
+function donorCard(d){
+  const sel = S.selected.has(d.id), open = S.openWhy.has(d.id);
+  const tier = d.score>=90?'hi':d.score>=75?'mid':'';
+  return `<article class="dcard ${sel?'sel':''}">
+    <button class="dmain" onclick="toggleDonor('${d.id}')" aria-pressed="${sel}">
+      <span class="check">${sel?sprite('tick',2):''}</span>
+      <span class="dav">${d.name[0]}</span>
+      <span class="dinfo">
+        <span class="dname">${d.name}${d.verified?'<span class="vb">VERIFIED</span>':'<span class="pill grey" style="padding:1px 5px;font-size:10px">Unverified</span>'}</span>
+        <span class="dmeta" style="display:block">${gl(d.group)} · ${d.km} km · ${d.reliability}% responds</span>
+      </span>
+      <span class="dscore ${tier}">${d.score}<small>%</small><span class="sl">match</span></span>
+    </button>
+    <button class="why" onclick="toggleWhy('${d.id}')" aria-expanded="${open}"><span class="car">▶</span>Why ${d.score}%?</button>
+    ${open ? `<div class="bd">${d.parts.map(p=>`<span>${p.k}</span><span class="bar"><i style="width:${p.v*100}%"></i></span><span class="pts">${Math.round(p.pts)}/${p.max}</span>`).join('')}</div>` : ''}
+  </article>`;
+}
+function toggleDonor(id){ S.selected.has(id)?S.selected.delete(id):S.selected.add(id); RENDER.matching(); }
+function toggleWhy(id){ S.openWhy.has(id)?S.openWhy.delete(id):S.openWhy.add(id); RENDER.matching(); }
+function toggleAll(){
+  const {ready}=getMatches();
+  S.selected = S.selected.size===ready.length ? new Set() : new Set(ready.map(d=>d.id));
+  RENDER.matching();
+}
+function setView(v){ S.view=v; RENDER.matching(); }
+
+/* ---------- alert + live tracking ---------- */
+function sendAlert(){
+  S.timers.forEach(clearTimeout); S.timers=[];
+  const {ready} = getMatches();
+  const notified = ready.filter(d=>S.selected.has(d.id));
+  S.request = { group:S.group, units:S.units, hospital:S.hospital, urgency:S.urgency,
+                notified, stage:0, acceptedBy:null, cancelArmed:false };
+  go('alert',{reset:true});
+  const step = (ms, fn)=>S.timers.push(setTimeout(()=>{ if(!S.request) return; fn(); if(S.current==='alert') RENDER.alert(); if(S.current==='home') RENDER.home(); }, ms));
+  step(900,  ()=>S.request.stage=1);
+  step(2400, ()=>S.request.stage=2);
+  step(4400, ()=>{ S.request.stage=3; S.request.acceptedBy=notified[0]; if(S.current!=='alert') toast(`${notified[0].name} accepted your request`); });
+}
+function requestHeadline(r){
+  if(r.stage>=4) return 'Donation complete';
+  if(r.stage>=3) return `${r.acceptedBy.name} is on the way`;
+  if(r.stage>=2) return 'Donors are viewing';
+  return 'Alerting donors…';
+}
+const eta = d => Math.round(d.km*4+6);
+RENDER.alert = ()=>{
+  const r = S.request, el = $('#alertBody');
+  if(!r){ el.innerHTML = `<div class="empty">${sprite('heart',5)}<h3>No active request</h3><button class="btn btn-red" onclick="go('request')">Request blood</button></div>`; return; }
+  const n = r.notified.length, a = r.acceptedBy;
+  const best = Math.max(...r.notified.map(d=>d.score));
+  const head = r.stage>=4
+    ? { art:sprite('heart',6,'bob'), h:'Donation complete', p:`Thank you for using BloodAid. ${a.name}'s donation has been recorded at ${r.hospital}.` }
+    : r.stage>=3
+    ? { art:sprite('personG',6,'bob'), h:`${a.name} is on the way`, p:`Arriving at ${r.hospital} in about ${eta(a)} min. We've stopped alerting the others.` }
+    : { art:sprite('siren',6,'breathe'), h:`Alerting ${n} donor${n>1?'s':''}…`, p:`${gl(r.group)} needed at ${r.hospital}. Keep this screen open — we'll update you live.` };
+
+  const steps = [
+    { t:'Request created', s:`${gl(r.group)} · ${r.units} unit${r.units>1?'s':''} · ${URGENCY[r.urgency].label}` },
+    { t:'Alerts delivered', s:`Push + SMS to ${r.notified.map(d=>d.name).join(', ')}` },
+    { t:'Donors viewing', s: r.stage>=2 ? `${Math.min(n,2)} of ${n} opened the alert` : 'Waiting for donors to open it' },
+    { t: a ? `${a.name} accepted` : 'A donor accepts', s: a ? `ETA ${eta(a)} min · hospital notified` : 'First to accept gets directions' },
+    { t:'Donation received', s:'Confirm once the hospital has the blood' },
+  ];
+  const cls = i => i<r.stage+1 && !(i===r.stage+1) ? (i<=r.stage?'done':'') : (i===r.stage+1?'now':'wait');
+  el.innerHTML = `
+    <div class="alert-head">${head.art}<h2>${head.h}</h2><p>${head.p}</p></div>
+    <div class="stats3">
+      <div><div class="v">${n}</div><div class="k">Notified</div></div>
+      <div><div class="v">${best}%</div><div class="k">Best match</div></div>
+      <div><div class="v">${a?eta(a)+'m':'—'}</div><div class="k">ETA</div></div>
+    </div>
+    ${a && r.stage<4 ? `<div class="accepted"><div class="who"><span class="dav">${a.name[0]}</span><div><div class="n">${a.name} · ${gl(a.group)}</div><div class="m">${a.km} km away · ${a.reliability}% reliable</div></div></div>
+      <div class="acts"><button class="btn btn-white btn-sm" onclick="toast('Calling ${a.name}… (demo)')">Call</button>
+      <button class="btn btn-white btn-sm" onclick="S.mapFocus.tab='${a.id}';tab('map')">Track on map</button></div></div>` : ''}
+    <div class="timeline">${steps.map((s,i)=>{ const c = i<=r.stage?'done':(i===r.stage+1?'now':'wait');
+      return `<div class="ts ${c}"><div class="tdot">${c==='done'?sprite('tick',2):c==='now'?'<i></i>':''}</div><div><div class="t1">${s.t}</div><div class="t2">${s.s}</div></div></div>`;}).join('')}</div>
+    <div class="footer">
+      ${r.stage>=4
+        ? `<button class="btn btn-red" onclick="closeRequest()">Done</button>`
+        : r.stage>=3
+        ? `<button class="btn btn-red" onclick="markReceived()">Mark blood as received</button>`
+        : `<button class="btn btn-white" onclick="go('home',{reset:true})">Wait on home screen</button>`}
+      ${r.stage<4 ? `<button class="btn ${r.cancelArmed?'btn-ink':'btn-white'}" onclick="cancelRequest()">${r.cancelArmed?'Tap again to cancel request':'Cancel request'}</button>`:''}
+    </div>`;
+};
+function markReceived(){ S.request.stage=4; RENDER.alert(); }
+function closeRequest(){ S.request=null; go('home',{reset:true}); toast('Request closed. Thank you!'); }
+function cancelRequest(){
+  const r=S.request;
+  if(!r.cancelArmed){ r.cancelArmed=true; RENDER.alert(); setTimeout(()=>{ if(S.request){S.request.cancelArmed=false; if(S.current==='alert') RENDER.alert();} },3000); return; }
+  S.timers.forEach(clearTimeout); S.request=null; go('home',{reset:true}); toast('Request cancelled. Donors have been told.');
+}
+
+/* ---------- nearby (map tab) ---------- */
+RENDER.map = ()=>{
+  const donors = DONORS.filter(d=>d.available && isEligible(d));
+  $('#mapTabBody').innerHTML = mapHTML('tab',{donors}) + `
+    <div class="section-h"><h3>Stock right now</h3><span class="lbl">your group outlined</span></div>
+    <div class="banklist" style="padding-bottom:24px">${BANKS.map(b=>`
+      <div class="card" style="box-shadow:2px 2px 0 var(--ink)">
+        <div class="row">${sprite('hosp',3)}<div style="flex:1"><div class="bn" style="font-weight:700">${b.name}</div><div class="small muted">${b.km} km · ${b.open}</div></div>
+        <button class="btn btn-white btn-sm" onclick="toast('Calling ${b.name}… (demo)')">Call</button></div>
+        <div class="stock">${GROUPS.map(g=>`<div class="${b.stock[g]} ${g===USER.group?'me':''}">${gl(g)}</div>`).join('')}</div>
+      </div>`).join('')}</div>`;
+};
+
+/* ---------- profile ---------- */
+RENDER.profile = ()=>{
+  const next = nextEligible(USER.lastDonation), left = daysBetween(TODAY,next), ready = left<=0;
+  const visible = ready && S.visible!==false;
+  $('#profileBody').innerHTML = `
+    <div class="topbar"><h2>Profile</h2></div>
+    <div class="phero">
+      <div class="pav">${USER.initials}</div>
+      <h2>${USER.name}</h2>
+      <div class="small muted" style="margin:4px 0 10px">${gl(USER.group)} · ${USER.city}</div>
+      ${USER.verified?'<span class="pill mint">✓ Verified donor</span>':''}
+    </div>
+
+    <div class="section-h" style="margin-top:4px"><h3>Availability</h3></div>
+    <div class="card plist" style="margin:0 18px">
+      <div class="li"><div><div class="v">Visible to requesters</div><div class="small muted">${ready?'People nearby can alert you':'Paused during cooldown'}</div></div>
+        <button class="tog ${visible?'on':''}" ${ready?'':'disabled'} onclick="S.visible=!(S.visible!==false);RENDER.profile()" aria-label="Visible to requesters"><i></i></button></div>
+      <div class="li"><div><div class="v">Remind me when eligible</div><div class="small muted">${fmt(next)}</div></div>
+        <button class="tog ${S.remind?'on':''}" onclick="S.remind=!S.remind;RENDER.profile();toast(S.remind?'We\\'ll remind you on ${fmt(next)}':'Reminder off')" aria-label="Remind me when eligible"><i></i></button></div>
+      ${ready?'':`<div class="note">${sprite('drop',1.1)}<span>You donated on ${fmt(USER.lastDonation)}. To protect your health you'll be hidden from requests for ${left} more days.</span></div>`}
+    </div>
+
+    <div class="section-h"><h3>Reliability</h3><span class="pill mint">Highly reliable</span></div>
+    <div class="card plist" style="margin:0 18px">
+      <div class="li"><span class="k">Response rate</span><span class="v">${USER.responseRate}%</span></div>
+      <div class="segbar mintbar" style="margin:0 0 6px">${Array.from({length:10},(_,i)=>`<i class="${i<Math.round(USER.responseRate/10)?'on':''}"></i>`).join('')}</div>
+      <div class="li"><span class="k">Emergency responses</span><span class="v">${USER.responses}</span></div>
+      <div class="li"><span class="k">Missed requests</span><span class="v">${USER.missed}</span></div>
+      <div class="li"><span class="k">Last donation</span><span class="v">${fmt(USER.lastDonation)} 2026</span></div>
+    </div>
+    <div class="pad" style="margin:22px 0 26px"><button class="btn btn-white" onclick="S.request=null;S.timers.forEach(clearTimeout);go('splash',{reset:true})">Sign out</button></div>`;
+};
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+$('#splashDrop').innerHTML = sprite('dropW',8);
+$('#loginDrop').innerHTML = sprite('drop',3);
+$('#ic-home').innerHTML = sprite('home',2.6);
+$('#ic-map').innerHTML = sprite('pin',2.6);
+$('#ic-bell').innerHTML = sprite('bell',2.6);
+$('#ic-user').innerHTML = sprite('user',2.6);
+$('#ic-req').innerHTML = sprite('plusW',3);
+</script>
+</body>
+</html>
