@@ -1,0 +1,91 @@
+[
+  {
+    "id": "rahul",
+    "name": "Rahul",
+    "group": "O+",
+    "km": 1.2,
+    "x": 15,
+    "y": 11,
+    "available": true,
+    "verified": true,
+    "reliability": 96
+  },
+  {
+    "id": "priya",
+    "name": "Priya",
+    "group": "O-",
+    "km": 2.8,
+    "x": 26,
+    "y": 8,
+    "available": true,
+    "verified": true,
+    "reliability": 81
+  },
+  {
+    "id": "kavya",
+    "name": "Kavya",
+    "group": "O+",
+    "km": 3.4,
+    "x": 8,
+    "y": 20,
+    "available": true,
+    "verified": true,
+    "reliability": 74,
+    "cooldownUntil": "2026-11-09"
+  },
+  {
+    "id": "imran",
+    "name": "Imran",
+    "group": "B+",
+    "km": 2,
+    "x": 22,
+    "y": 19,
+    "available": true,
+    "verified": true,
+    "reliability": 88
+  },
+  {
+    "id": "divya",
+    "name": "Divya",
+    "group": "A+",
+    "km": 4.6,
+    "x": 31,
+    "y": 21,
+    "available": true,
+    "verified": true,
+    "reliability": 90
+  },
+  {
+    "id": "sanjay",
+    "name": "Sanjay",
+    "group": "O+",
+    "km": 5.7,
+    "x": 4,
+    "y": 5,
+    "available": false,
+    "verified": true,
+    "reliability": 65
+  },
+  {
+    "id": "meera",
+    "name": "Meera",
+    "group": "AB+",
+    "km": 1.9,
+    "x": 13,
+    "y": 17,
+    "available": true,
+    "verified": true,
+    "reliability": 84
+  },
+  {
+    "id": "vikram",
+    "name": "Vikram",
+    "group": "O-",
+    "km": 6.3,
+    "x": 33,
+    "y": 4,
+    "available": true,
+    "verified": false,
+    "reliability": 70
+  }
+]

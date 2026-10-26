@@ -1,0 +1,20 @@
+[
+  {
+    "name": "ABC General Hospital",
+    "km": 0.8,
+    "x": 20,
+    "y": 16
+  },
+  {
+    "name": "Government Hospital, Tirupporur",
+    "km": 2.4,
+    "x": 11,
+    "y": 15
+  },
+  {
+    "name": "Chettinad Health City",
+    "km": 3.2,
+    "x": 27,
+    "y": 13
+  }
+]

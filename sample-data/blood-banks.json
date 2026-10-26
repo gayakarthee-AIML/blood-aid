@@ -1,0 +1,56 @@
+[
+  {
+    "id": "b1",
+    "name": "City Central Blood Bank",
+    "km": 1.4,
+    "x": 21,
+    "y": 11,
+    "open": "Open 24 hrs",
+    "stock": {
+      "A+": "high",
+      "A-": "low",
+      "B+": "high",
+      "B-": "out",
+      "O+": "high",
+      "O-": "low",
+      "AB+": "high",
+      "AB-": "out"
+    }
+  },
+  {
+    "id": "b2",
+    "name": "Sri Ramachandra Blood Centre",
+    "km": 2.9,
+    "x": 9,
+    "y": 10,
+    "open": "Open till 9 pm",
+    "stock": {
+      "A+": "high",
+      "A-": "out",
+      "B+": "low",
+      "B-": "low",
+      "O+": "low",
+      "O-": "out",
+      "AB+": "high",
+      "AB-": "low"
+    }
+  },
+  {
+    "id": "b3",
+    "name": "Apollo Blood Bank",
+    "km": 4.1,
+    "x": 32,
+    "y": 24,
+    "open": "Open 24 hrs",
+    "stock": {
+      "A+": "low",
+      "A-": "high",
+      "B+": "high",
+      "B-": "out",
+      "O+": "out",
+      "O-": "low",
+      "AB+": "low",
+      "AB-": "out"
+    }
+  }
+]
